@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line & WhatsApp 分流链接生成器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { max-width: 600px; margin: 20px auto; padding: 0 20px; }
+        .title { text-align: center; margin: 20px 0; color: #333; }
+        .config-card { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        button { width: 100%; padding: 12px; background: #2196F3; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #1976D2; }
+        .result-area { margin-top: 30px; }
+        .result-link { width: 100%; padding: 12px; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 4px; margin: 10px 0; word-break: break-all; }
+        .tip { color: #666; font-size: 14px; margin-top: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1 class="title">Line & WhatsApp 分流链接生成器</h1>
+    <div class="config-card">
+        <div class="form-group">
+            <label for="line-id">Line 账号ID（格式：@xxx123，可选）</label>
+            <input type="text" id="line-id" placeholder="例如：@line123456（没有则留空）">
+            <p class="tip">Line ID获取：Line → 设置 → 账号 → Line ID</p>
+        </div>
+        <div class="form-group">
+            <label for="whatsapp-phone">WhatsApp 手机号（格式：国家码+手机号，可选）</label>
+            <input type="text" id="whatsapp-phone" placeholder="例如：8613800138000（中国手机号，无+号）">
+            <p class="tip">示例：美国手机号填 12125551234，无空格/符号</p>
+        </div>
+        <div class="form-group">
+            <label for="your-domain">你的网页域名（必填，如：https://abc.com）</label>
+            <input type="text" id="your-domain" placeholder="必须填HTTPS域名，如https://mywebsite.com" required>
+            <p class="tip">需先将本HTML文件上传到你的域名下（如：https://mywebsite.com/redirect.html）</p>
+        </div>
+        <button onclick="generateLinks()">生成分流链接</button>
+    </div>
+    <div class="result-area" id="result-area" style="display: none;">
+        <h3>生成结果</h3>
+        <p>Line分流链接：</p>
+        <div class="result-link" id="line-link"></div>
+        <button onclick="copyLink('line-link')">复制Line链接</button>
+        <p style="margin-top: 20px;">WhatsApp分流链接：</p>
+        <div class="result-link" id="whatsapp-link"></div>
+        <button onclick="copyLink('whatsapp-link')">复制WhatsApp链接</button>
+        <p class="tip" style="margin-top: 20px;">使用说明：用户点击链接后，会自动跳转至对应APP（手机）或网页版（PC）</p>
+    </div>
+    <script>
+        function generateLinks() {
+            const lineId = document.getElementById("line-id").value.trim();
+            const waPhone = document.getElementById("whatsapp-phone").value.trim();
+            const domain = document.getElementById("your-domain").value.trim();
+            if (!domain.startsWith("https://")) {
+                alert("域名必须以https://开头（如：https://mywebsite.com）");
+                return;
+            }
+            const lineFinalLink = lineId ? `${domain}/redirect.html?target=line&userId=${lineId}` : "未填写Line ID，无法生成";
+            const waFinalLink = waPhone ? `${domain}/redirect.html?target=whatsapp&phone=${waPhone}` : "未填写WhatsApp手机号，无法生成";
+            document.getElementById("line-link").textContent = lineFinalLink;
+            document.getElementById("whatsapp-link").textContent = waFinalLink;
+            document.getElementById("result-area").style.display = "block";
+        }
+        function copyLink(elementId) {
+            const linkText = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert("链接复制成功！");
+            }).catch(() => {
+                alert("复制失败，请手动复制");
+            });
+        }
+    </script>
+    <p class="tip" style="margin-top: 30px;">步骤补充：将下方代码单独保存为「redirect.html」，和本文件一起上传到域名根目录</p>
+</body>
+</html>

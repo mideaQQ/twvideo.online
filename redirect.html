@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在跳转...</title>
+    <script>
+        // 从URL获取参数（知道要跳哪个APP）
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get("target");
+        const userId = params.get("userId");
+        const phone = params.get("phone");
+
+        // 各APP的跳转配置（官方协议）
+        const appConfig = {
+            line: {
+                app: `line://ti/p/~${userId}`, // 唤醒Line APP
+                web: `https://line.me/R/ti/p/~${userId}`, // Line网页版（PC用）
+                store: "https://apps.apple.com/app/line/id443904275" // Line应用商店（唤醒失败时跳这里）
+            },
+            whatsapp: {
+                app: `whatsapp://send?phone=${phone}`, // 唤醒WhatsApp APP
+                web: `https://api.whatsapp.com/send?phone=${phone}`, // WhatsApp网页版（PC用）
+                store: "https://apps.apple.com/app/whatsapp-messenger/id310633997" // WhatsApp应用商店
+            }
+        };
+
+        // 核心分流逻辑：判断设备，决定跳APP还是网页版
+        function redirect() {
+            const config = appConfig[target];
+            if (!config) { 
+                alert("链接无效，请检查生成的链接是否正确"); 
+                return; 
+            }
+
+            // 判断是否是手机（手机优先唤醒APP，PC跳网页版）
+            const isMobile = /Android|iPhone|iPad/.test(navigator.userAgent);
+            if (!isMobile) {
+                window.location.href = config.web; // PC端直接跳网页版
+                return;
+            }
+
+            // 手机端：先尝试唤醒APP，3秒没成功就跳应用商店
+            window.location.href = config.app;
+            setTimeout(() => {
+                if (!document.hidden) { // 如果3秒后页面还没被隐藏（说明APP没唤醒成功）
+                    window.location.href = config.store;
+                }
+            }, 3000);
+        }
+
+        // 页面加载完成后执行跳转
+        window.onload = redirect;
+    </script>
+</head>
+<body>
+    <p style="text-align: center; margin-top: 50px;">正在跳转至目标APP...若未跳转，<a href="https://apps.apple.com/">点击下载对应APP</a></p>
+</body>
+</html>
